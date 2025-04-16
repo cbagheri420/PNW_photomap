@@ -9,7 +9,9 @@ body, html {
     height: 100vh;
   }
   
-  .leaflet-popup-content img {
-    max-width: 200px;
-    border-radius: 10px;
+  .leaflet-popup-content {
+    max-width: unset !important;
+    width: auto !important;
+    margin: 0 !important;
+    text-align: center;
   }
