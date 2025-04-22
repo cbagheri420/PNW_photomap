@@ -1,5 +1,69 @@
+import { initializeApp } from 'firebase/app';
+import { getFirestore, getStorage, ref, addDoc, doc, setDoc, collection, getDocs, uploadBytes } from 'firebase/firestore';
+import { getDownloadURL } from "firebase/storage";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDOiM0cE_ZMNyaMWKN2qLUFNOKBzckX4lQ",
+  authDomain: "photomap-126d9.firebaseapp.com",
+  projectId: "photomap-126d9",
+  storageBucket: "photomap-126d9.firebasestorage.app",
+  messagingSenderId: "1050413195252",
+  appId: "1:1050413195252:web:871484345b1fe9d310a3a1"
+};
+
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+
 // Set up the map centered on the Pacific Northwest
 const map = L.map('map').setView([47.6062, -122.3321], 7);  // Centered on Seattle
+
+function uploadFile() {
+  const file = document.getElementById("fileInput").files[0];  // Get the selected file
+
+  if (file) {
+    const storageRef = ref(storage, 'photos/' + file.name);  // Create a reference in Firebase Storage
+
+    uploadBytes(storageRef, file).then((snapshot) => {
+      console.log('File uploaded successfully!');
+      // Once uploaded, you can get the download URL of the file
+      getFileURL(storageRef);
+    }).catch((error) => {
+      console.error('Error uploading file:', error);
+    });
+  }
+}
+
+// Function to get the download URL of the uploaded file
+function getFileURL(storageRef) {
+  getDownloadURL(storageRef)
+    .then((url) => {
+      console.log('File available at', url);
+      // Here you get the URL, which you can use to display the image or save to a database
+      // Example: Set the URL as the src of an image tag
+      document.getElementById("myImage").src = url;
+    })
+    .catch((error) => {
+      console.error('Error getting download URL:', error);
+    });
+}
+
+function saveImageMetadata(url, filename) {
+  // Reference for Firestore document (You can customize the document ID)
+  const docRef = doc(storage, "photos", filename);
+
+  // Save file URL to Firestore along with any other metadata you want
+  setDoc(docRef, {
+    url: url,
+    name: filename,
+    uploadedAt: new Date()
+  })
+    .then(() => {
+      console.log("File metadata saved to Firestore!");
+    })
+    .catch((error) => {
+      console.error("Error saving metadata:", error);
+    });
+}
 
 // Add OpenStreetMap tiles
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
