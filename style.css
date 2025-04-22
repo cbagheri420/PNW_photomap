@@ -1,52 +1,51 @@
 body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-  }
-  
-  #map {
-    position: absolute;
-    top: 60px; /* header height */
-    left: 0;
-    right: 0;
-    bottom: 0;
-  }
-  
-  .leaflet-popup-content {
-    max-width: unset !important;
-    width: auto !important;
-    margin: 0 !important;
-    text-align: center;
-  }
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 
-  header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 1rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    z-index: 999;
-  }
-  
-  header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-family: 'Segoe UI', sans-serif;
-    color: #333;
-  }
+#map {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
 
-  .popup img {
-    max-width: 200px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    margin-bottom: 0.5rem;
-  }
-  
-  .popup h3 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 500;
-    text-align: center;
-  }
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+}
+
+#myImage {
+  max-width: 150px;
+  margin-top: 10px;
+  display: block;
+}
+
+.popup img {
+  max-width: 200px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  margin-bottom: 0.5rem;
+}
+
+.popup h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}

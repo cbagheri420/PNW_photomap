@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <title>PNW Photo Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
@@ -9,13 +9,18 @@
 <body>
   <header>
     <h1>📍 World Photo Map</h1>
-    <input type="file" id="fileInput" />
-    <button onclick="uploadFile()">Upload</button>
-    <img id="myImage" alt="Uploaded Image" />
+    <input type="file" id="fileInput">
+    <input type="text" id="labelInput" placeholder="Label">
+    <input type="number" id="latInput" placeholder="Latitude">
+    <input type="number" id="lngInput" placeholder="Longitude">
+    <button onclick="uploadFile()">Upload File</button>
   </header>
   <div id="map"></div>
 
+  <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="script.js"></script>
+  
+  <!-- Firebase SDKs -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
