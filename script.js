@@ -49,6 +49,9 @@ marker12.bindPopup('<strong>The Shining Hotel, CO</strong><br><img src="images/c
 const marker13 = L.marker([39.665800923814686, -105.2052119663685]).addTo(map);
 marker13.bindPopup('<strong>Red Rock Ampitheatre, CO</strong><br><img src="images/colorado_redrock.jpg" alt="redrock" width="150">');
 
+const marker21 = L.marker([40.74866805447258, -73.98553565807656]).addTo(map);
+marker21.bindPopup('<strong>Manhattan, NYC</strong><br><img src="images/nyc.jpg" alt="Manhattan" width="150">');
+
 // Europe
 const marker14 = L.marker([48.203609336908016, 16.36935360003761]).addTo(map);
 marker14.bindPopup('<strong>Vienna Opera House, Austria</strong><br><img src="images/vienna_opera1.jpg" alt="Vienna" width="150">');
