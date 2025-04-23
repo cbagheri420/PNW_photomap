@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 // Init Firebase
 const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+const storage = getStorage(app, "gs://photomap-126d9.firebasestorage.app");
 const db = getFirestore(app);
 
 // Map setup
@@ -52,7 +52,7 @@ window.uploadFile = async function() {
     alert("Uploading... please wait");
     
     // Upload file to Storage
-    const fileRef = storageRef(storage, 'photos/' + file.name);
+    const fileRef = storageRef(storage, file.name);
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
     
