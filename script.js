@@ -52,7 +52,7 @@ window.uploadFile = async function() {
     alert("Uploading... please wait");
     
     // Upload file to Storage
-    const fileRef = storageRef(storage, file.name);
+    const fileRef = storageRef(storage, 'photos/' + file.name);
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
     
