@@ -9,11 +9,16 @@
 <body>
   <header>
     <h1>📍 World Photo Map</h1>
-    <input type="file" id="fileInput">
-    <input type="text" id="labelInput" placeholder="Label">
-    <input type="number" id="latInput" placeholder="Latitude">
-    <input type="number" id="lngInput" placeholder="Longitude">
-    <button onclick="uploadFile()">Upload File</button>
+    <div class="input-group">
+      <input type="file" id="fileInput">
+      <input type="text" id="labelInput" placeholder="Label">
+      <div class="coord-group">
+        <input type="number" step="0.000001" id="latInput" placeholder="Latitude">
+        <input type="number" step="0.000001" id="lngInput" placeholder="Longitude">
+        <button id="locationBtn" onclick="useCurrentLocation()">📍 Use My Location</button>
+      </div>
+      <button class="upload-btn" onclick="uploadFile()">Upload Photo</button>
+    </div>
   </header>
   <div id="map"></div>
 

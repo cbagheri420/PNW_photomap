@@ -119,6 +119,41 @@ async function loadMarkers() {
   }
 }
 
+// Geolocation support
+window.useCurrentLocation = function() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser");
+    return;
+  }
+  
+  const locationBtn = document.getElementById("locationBtn");
+  locationBtn.disabled = true;
+  locationBtn.textContent = "Getting location...";
+  
+  navigator.geolocation.getCurrentPosition(position => {
+    document.getElementById("latInput").value = position.coords.latitude.toFixed(6);
+    document.getElementById("lngInput").value = position.coords.longitude.toFixed(6);
+    
+    // Center map on user's location
+    map.setView([position.coords.latitude, position.coords.longitude], 12);
+    
+    // Add a temporary marker to show the location
+    const tempMarker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
+    tempMarker.bindPopup("Your location").openPopup();
+    
+    // Remove the marker after 5 seconds
+    setTimeout(() => map.removeLayer(tempMarker), 5000);
+    
+    locationBtn.disabled = false;
+    locationBtn.textContent = "📍 Use My Location";
+  }, error => {
+    console.error("Error getting location:", error);
+    alert(`Couldn't get your location: ${error.message}`);
+    locationBtn.disabled = false;
+    locationBtn.textContent = "📍 Use My Location";
+  });
+};
+
 // Load markers when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   loadMarkers();
