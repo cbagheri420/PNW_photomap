@@ -1,6 +1,23 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js';
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { 
+  getStorage, 
+  ref as storageRef, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject 
+} from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  serverTimestamp, 
+  deleteDoc, 
+  doc 
+} from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+
+// Global marker tracking
+const markers = {};
 
 // Firebase config
 const firebaseConfig = {
@@ -55,20 +72,51 @@ map.on('click', function(e) {
   clickMarker.bindPopup("Upload location").openPopup();
 });
 
-// Clear marker when upload completes
-const originalUploadFile = window.uploadFile;
-window.uploadFile = async function() {
-  try {
-    await originalUploadFile();
-    
-    // Clear the temporary marker after successful upload
-    if (clickMarker) {
-      map.removeLayer(clickMarker);
-      clickMarker = null;
-    }
-  } catch (error) {
-    console.error("Error in upload:", error);
+// Geolocation support
+window.useCurrentLocation = function() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser");
+    return;
   }
+  
+  const locationBtn = document.getElementById("locationBtn");
+  locationBtn.disabled = true;
+  locationBtn.textContent = "Getting location...";
+  
+  navigator.geolocation.getCurrentPosition(position => {
+    document.getElementById("latInput").value = position.coords.latitude.toFixed(6);
+    document.getElementById("lngInput").value = position.coords.longitude.toFixed(6);
+    
+    // Center map on user's location
+    map.setView([position.coords.latitude, position.coords.longitude], 12);
+    
+    // Add a temporary marker to show the location
+    if (clickMarker) {
+      clickMarker.setLatLng([position.coords.latitude, position.coords.longitude]);
+    } else {
+      clickMarker = L.marker([position.coords.latitude, position.coords.longitude], {
+        opacity: 0.7,
+        draggable: true
+      }).addTo(map);
+      
+      // Update coordinates when marker is dragged
+      clickMarker.on('dragend', function() {
+        const position = clickMarker.getLatLng();
+        document.getElementById("latInput").value = position.lat.toFixed(6);
+        document.getElementById("lngInput").value = position.lng.toFixed(6);
+      });
+    }
+    
+    clickMarker.bindPopup("Your location").openPopup();
+    
+    locationBtn.disabled = false;
+    locationBtn.textContent = "📍 Use My Location";
+  }, error => {
+    console.error("Error getting location:", error);
+    alert(`Couldn't get your location: ${error.message}`);
+    locationBtn.disabled = false;
+    locationBtn.textContent = "📍 Use My Location";
+  });
 };
 
 // Upload photo and metadata
@@ -95,7 +143,9 @@ window.uploadFile = async function() {
     }
 
     // Show upload is happening
-    alert("Uploading... please wait");
+    const uploadBtn = document.querySelector(".upload-btn");
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "Uploading...";
     
     // Upload file to Storage
     const fileRef = storageRef(storage, 'photos/' + file.name);
@@ -117,7 +167,16 @@ window.uploadFile = async function() {
 
     // Add the new marker to the map immediately without reload
     const marker = L.marker([lat, lng]).addTo(map);
-    marker.bindPopup(`<strong>${label}</strong><br><img src="${url}" alt="${label}" width="150">`);
+    markers[docRef.id] = marker;
+    marker.bindPopup(
+      `<div class="popup-content">
+        <strong>${label}</strong>
+        <img src="${url}" alt="${label}" width="150">
+        <button class="delete-btn" onclick="deletePhoto('${docRef.id}', '${file.name}', this)">
+          🗑️ Remove
+        </button>
+      </div>`
+    );
     
     // Clear form
     fileInput.value = "";
@@ -125,14 +184,60 @@ window.uploadFile = async function() {
     document.getElementById("latInput").value = "";
     document.getElementById("lngInput").value = "";
     
+    // Clear the temporary marker after successful upload
+    if (clickMarker) {
+      map.removeLayer(clickMarker);
+      clickMarker = null;
+    }
+    
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "Upload Photo";
+    
     alert("Photo uploaded successfully!");
   } catch (error) {
     console.error("Upload failed:", error);
     alert("Upload failed: " + error.message);
+    document.querySelector(".upload-btn").disabled = false;
+    document.querySelector(".upload-btn").textContent = "Upload Photo";
   }
 };
 
-// Load markers from Firestore "photos"
+// Improved delete function using marker references
+window.deletePhoto = async function(docId, filename, buttonElement) {
+  try {
+    // Confirm before deleting
+    if (!confirm("Are you sure you want to delete this photo?")) {
+      return;
+    }
+    
+    buttonElement.textContent = "Deleting...";
+    buttonElement.disabled = true;
+    
+    // Delete from Firestore
+    await deleteDoc(doc(db, "photos", docId));
+    
+    // Delete from Storage
+    const fileRef = storageRef(storage, 'photos/' + filename);
+    await deleteObject(fileRef);
+    
+    // Remove the marker using our stored reference
+    if (markers[docId]) {
+      map.removeLayer(markers[docId]);
+      delete markers[docId]; // Clean up the reference
+    }
+    
+    // Close any open popup
+    map.closePopup();
+    
+    console.log("Photo deleted successfully");
+    alert("Photo deleted successfully!");
+  } catch (error) {
+    console.error("Error deleting photo:", error);
+    alert("Failed to delete photo: " + error.message);
+  }
+};
+
+// Modified loadMarkers function
 async function loadMarkers() {
   try {
     const snapshot = await getDocs(collection(db, 'photos'));
@@ -141,21 +246,34 @@ async function loadMarkers() {
     snapshot.forEach(async (doc) => {
       const data = doc.data();
       const { coords, label, filename } = data;
+      const docId = doc.id;
       
       if (!coords || !Array.isArray(coords) || coords.length !== 2) {
-        console.error("Invalid coordinates for document:", doc.id);
+        console.error("Invalid coordinates for document:", docId);
         return;
       }
       
       if (!filename || !label) {
-        console.error("Missing filename or label for document:", doc.id);
+        console.error("Missing filename or label for document:", docId);
         return;
       }
 
       try {
         const url = await getDownloadURL(storageRef(storage, 'photos/' + filename));
         const marker = L.marker(coords).addTo(map);
-        marker.bindPopup(`<strong>${label}</strong><br><img src="${url}" alt="${label}" width="150">`);
+        
+        // Store marker reference with document ID
+        markers[docId] = marker;
+        
+        marker.bindPopup(
+          `<div class="popup-content">
+            <strong>${label}</strong>
+            <img src="${url}" alt="${label}" width="150">
+            <button class="delete-btn" onclick="deletePhoto('${docId}', '${filename}', this)">
+              🗑️ Remove
+            </button>
+          </div>`
+        );
       } catch (error) {
         console.error("Could not load image for:", filename, error);
       }
@@ -164,41 +282,6 @@ async function loadMarkers() {
     console.error("Error loading markers:", error);
   }
 }
-
-// Geolocation support
-window.useCurrentLocation = function() {
-  if (!navigator.geolocation) {
-    alert("Geolocation is not supported by your browser");
-    return;
-  }
-  
-  const locationBtn = document.getElementById("locationBtn");
-  locationBtn.disabled = true;
-  locationBtn.textContent = "Getting location...";
-  
-  navigator.geolocation.getCurrentPosition(position => {
-    document.getElementById("latInput").value = position.coords.latitude.toFixed(6);
-    document.getElementById("lngInput").value = position.coords.longitude.toFixed(6);
-    
-    // Center map on user's location
-    map.setView([position.coords.latitude, position.coords.longitude], 12);
-    
-    // Add a temporary marker to show the location
-    const tempMarker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
-    tempMarker.bindPopup("Your location").openPopup();
-    
-    // Remove the marker after 5 seconds
-    setTimeout(() => map.removeLayer(tempMarker), 5000);
-    
-    locationBtn.disabled = false;
-    locationBtn.textContent = "📍 Use My Location";
-  }, error => {
-    console.error("Error getting location:", error);
-    alert(`Couldn't get your location: ${error.message}`);
-    locationBtn.disabled = false;
-    locationBtn.textContent = "📍 Use My Location";
-  });
-};
 
 // Load markers when the page loads
 document.addEventListener('DOMContentLoaded', () => {

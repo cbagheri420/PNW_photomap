@@ -2,11 +2,12 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 #map {
   position: absolute;
-  top: 60px;
+  top: 100px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -26,28 +27,7 @@ header {
 header h1 {
   margin: 0;
   font-size: 1.5rem;
-  font-family: 'Segoe UI', sans-serif;
   color: #333;
-}
-
-#myImage {
-  max-width: 150px;
-  margin-top: 10px;
-  display: block;
-}
-
-.popup img {
-  max-width: 200px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  margin-bottom: 0.5rem;
-}
-
-.popup h3 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 500;
-  text-align: center;
 }
 
 .input-group {
@@ -74,6 +54,11 @@ header h1 {
   padding: 8px 16px;
   cursor: pointer;
   border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.upload-btn:hover {
+  background-color: #45a049;
 }
 
 #locationBtn {
@@ -83,6 +68,11 @@ header h1 {
   padding: 8px;
   cursor: pointer;
   border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+#locationBtn:hover {
+  background-color: #0b7dda;
 }
 
 #fileInput {
@@ -95,4 +85,58 @@ header h1 {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  min-width: 150px;
+}
+
+.popup-content {
+  text-align: center;
+}
+
+.popup-content strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.popup-content img {
+  max-width: 150px;
+  border-radius: 5px;
+  margin: 5px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-top: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: block;
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  header {
+    padding: 0.5rem;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  #map {
+    top: 180px;
+  }
 }
