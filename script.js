@@ -25,6 +25,52 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.p
   maxZoom: 19
 }).addTo(map);
 
+// Click on map to set coordinates
+let clickMarker = null;
+map.on('click', function(e) {
+  const lat = e.latlng.lat;
+  const lng = e.latlng.lng;
+  
+  // Update form fields
+  document.getElementById("latInput").value = lat.toFixed(6);
+  document.getElementById("lngInput").value = lng.toFixed(6);
+  
+  // Add or move temporary marker
+  if (clickMarker) {
+    clickMarker.setLatLng([lat, lng]);
+  } else {
+    clickMarker = L.marker([lat, lng], {
+      opacity: 0.7,
+      draggable: true
+    }).addTo(map);
+    
+    // Update coordinates when marker is dragged
+    clickMarker.on('dragend', function() {
+      const position = clickMarker.getLatLng();
+      document.getElementById("latInput").value = position.lat.toFixed(6);
+      document.getElementById("lngInput").value = position.lng.toFixed(6);
+    });
+  }
+  
+  clickMarker.bindPopup("Upload location").openPopup();
+});
+
+// Clear marker when upload completes
+const originalUploadFile = window.uploadFile;
+window.uploadFile = async function() {
+  try {
+    await originalUploadFile();
+    
+    // Clear the temporary marker after successful upload
+    if (clickMarker) {
+      map.removeLayer(clickMarker);
+      clickMarker = null;
+    }
+  } catch (error) {
+    console.error("Error in upload:", error);
+  }
+};
+
 // Upload photo and metadata
 window.uploadFile = async function() {
   try {

@@ -49,3 +49,50 @@ header h1 {
   font-weight: 500;
   text-align: center;
 }
+
+.input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.coord-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+#latInput, #lngInput {
+  width: 120px;
+}
+
+.upload-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#locationBtn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#fileInput {
+  border: 1px solid #ddd;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+#labelInput {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
