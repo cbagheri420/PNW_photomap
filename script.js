@@ -119,6 +119,42 @@ window.useCurrentLocation = function() {
   });
 };
 
+window.uploadFile = async function() {
+  try {
+    // ... existing code ...
+    
+    const lat = parseFloat(document.getElementById("latInput").value);
+    const lng = parseFloat(document.getElementById("lngInput").value);
+    
+    // Check for existing photos at the same coordinates
+    const photosCollection = collection(db, "photos");
+    const snapshot = await getDocs(photosCollection);
+    let isDuplicate = false;
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.coords && 
+          Math.abs(data.coords[0] - lat) < 0.000001 && 
+          Math.abs(data.coords[1] - lng) < 0.000001) {
+        isDuplicate = true;
+      }
+    });
+    
+    if (isDuplicate) {
+      if (!confirm("A photo already exists at these coordinates. Do you want to add another?")) {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = "Upload Photo";
+        return;
+      }
+    }
+    
+    // ... continue with existing upload code ...
+  } catch (error) {
+    // ... error handling ...
+  }
+};
+
+
 // Upload photo and metadata
 window.uploadFile = async function() {
   try {
@@ -237,11 +273,21 @@ window.deletePhoto = async function(docId, filename, buttonElement) {
   }
 };
 
-// Modified loadMarkers function
+// Improved loadMarkers function with coordinate tracking
 async function loadMarkers() {
   try {
+    // Clear all existing markers first
+    Object.values(markers).forEach(marker => {
+      map.removeLayer(marker);
+    });
+    // Reset the markers object
+    Object.keys(markers).forEach(key => delete markers[key]);
+    
     const snapshot = await getDocs(collection(db, 'photos'));
     console.log(`Loading ${snapshot.size} markers from Firestore`);
+    
+    // Set to track coordinates we've already placed markers at
+    const coordinatesSet = new Set();
     
     snapshot.forEach(async (doc) => {
       const data = doc.data();
@@ -257,6 +303,17 @@ async function loadMarkers() {
         console.error("Missing filename or label for document:", docId);
         return;
       }
+      
+      // Create a string key for the coordinates
+      const coordKey = `${coords[0].toFixed(6)},${coords[1].toFixed(6)}`;
+      
+      // Skip if we've already added a marker at these coordinates
+      if (coordinatesSet.has(coordKey)) {
+        console.log(`Skipping duplicate marker at ${coordKey}`);
+        return;
+      }
+      
+      coordinatesSet.add(coordKey);
 
       try {
         const url = await getDownloadURL(storageRef(storage, 'photos/' + filename));
