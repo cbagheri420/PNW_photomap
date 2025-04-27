@@ -34,12 +34,29 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app, "gs://photomap-126d9.firebasestorage.app");
 const db = getFirestore(app);
 
-// Map setup
-const map = L.map('map').setView([47.6062, -122.3321], 7);
+// Map setup with circular view optimizations
+const map = L.map('map', {
+  maxBounds: [
+    [-90, -180],  // Southwest corner of the world
+    [90, 180]     // Northeast corner of the world
+  ],
+  maxBoundsViscosity: 1.0,  // Makes the bounds "sticky"
+  worldCopyJump: true,      // Better panning across the date line
+  minZoom: 1.5,             // Allow seeing most of the world
+  maxZoom: 19,
+  zoomControl: false        // We'll add this in a custom position
+}).setView([20, 0], 2);     // Center on the equator
+
+// Add zoom control in a better position for the circular map
+L.control.zoom({
+  position: 'bottomright'
+}).addTo(map);
+
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
   subdomains: 'abcd',
-  maxZoom: 19
+  maxZoom: 19,
+  noWrap: true  // Prevents the tile layer from repeating horizontally
 }).addTo(map);
 
 // Click on map to set coordinates
@@ -119,43 +136,7 @@ window.useCurrentLocation = function() {
   });
 };
 
-window.uploadFile = async function() {
-  try {
-    // ... existing code ...
-    
-    const lat = parseFloat(document.getElementById("latInput").value);
-    const lng = parseFloat(document.getElementById("lngInput").value);
-    
-    // Check for existing photos at the same coordinates
-    const photosCollection = collection(db, "photos");
-    const snapshot = await getDocs(photosCollection);
-    let isDuplicate = false;
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      if (data.coords && 
-          Math.abs(data.coords[0] - lat) < 0.000001 && 
-          Math.abs(data.coords[1] - lng) < 0.000001) {
-        isDuplicate = true;
-      }
-    });
-    
-    if (isDuplicate) {
-      if (!confirm("A photo already exists at these coordinates. Do you want to add another?")) {
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = "Upload Photo";
-        return;
-      }
-    }
-    
-    // ... continue with existing upload code ...
-  } catch (error) {
-    // ... error handling ...
-  }
-};
-
-
-// Upload photo and metadata
+// Upload photo and metadata with duplicate check
 window.uploadFile = async function() {
   try {
     const fileInput = document.getElementById("fileInput");
@@ -176,6 +157,26 @@ window.uploadFile = async function() {
     
     if (isNaN(lat) || isNaN(lng)) {
       return alert("Please provide valid coordinates");
+    }
+
+    // Check for existing photos at the same coordinates
+    const photosCollection = collection(db, "photos");
+    const snapshot = await getDocs(photosCollection);
+    let isDuplicate = false;
+    
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.coords && 
+          Math.abs(data.coords[0] - lat) < 0.000001 && 
+          Math.abs(data.coords[1] - lng) < 0.000001) {
+        isDuplicate = true;
+      }
+    });
+    
+    if (isDuplicate) {
+      if (!confirm("A photo already exists at these coordinates. Do you want to add another?")) {
+        return;
+      }
     }
 
     // Show upload is happening
@@ -273,7 +274,7 @@ window.deletePhoto = async function(docId, filename, buttonElement) {
   }
 };
 
-// Improved loadMarkers function with coordinate tracking
+// Improved loadMarkers function with coordinate tracking to prevent duplicates
 async function loadMarkers() {
   try {
     // Clear all existing markers first

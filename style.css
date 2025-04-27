@@ -5,14 +5,6 @@ body, html {
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-#map {
-  position: absolute;
-  top: 100px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
 header {
   position: absolute;
   top: 0;
@@ -28,6 +20,37 @@ header h1 {
   margin: 0;
   font-size: 1.5rem;
   color: #333;
+}
+
+.map-container {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #b0d5e3; /* The space around the map */
+}
+
+#map {
+  position: relative;
+  background-color: #c4e0e9; /* Matches the ocean blue inside the map */
+  /* Make the map circular */
+  border-radius: 50%;
+  /* Size constraints */
+  width: 90vmin;
+  height: 90vmin;
+  /* Shadow for depth */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Make sure Leaflet's container matches */
+.leaflet-container {
+  background-color: #c4e0e9 !important;
+  border-radius: 50%;
 }
 
 .input-group {
@@ -136,7 +159,12 @@ button:disabled {
     flex-direction: column;
   }
   
-  #map {
+  .map-container {
     top: 180px;
+  }
+  
+  #map {
+    width: 95vw;
+    height: 95vw;
   }
 }
