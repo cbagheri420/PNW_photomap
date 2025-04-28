@@ -39,23 +39,19 @@ header h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(176, 213, 227, 0.5);
+  background-color: transparent;
 }
 
 #map {
   position: relative;
-  background-color: #c4e0e9; /* Matches the ocean blue inside the map */
-  /* Make the map circular */
+  background-color: #c4e0e9;
   border-radius: 50%;
-  /* Size constraints */
   width: 90vmin;
   height: 90vmin;
-  /* Shadow for depth */
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-/* Make sure Leaflet's container matches */
 .leaflet-container {
   background-color: #c4e0e9 !important;
   border-radius: 50%;

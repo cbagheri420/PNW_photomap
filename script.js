@@ -145,8 +145,6 @@ window.uploadFile = async function() {
     const lat = parseFloat(document.getElementById("latInput").value);
     const lng = parseFloat(document.getElementById("lngInput").value);
 
-    console.log("Upload attempted with:", { file, label, lat, lng });
-
     if (!file) {
       return alert("Please select a file to upload");
     }
@@ -188,8 +186,6 @@ window.uploadFile = async function() {
     const fileRef = storageRef(storage, 'photos/' + file.name);
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
-    
-    console.log("File uploaded successfully, URL:", url);
 
     // Save metadata to Firestore
     const photoData = {
@@ -200,7 +196,6 @@ window.uploadFile = async function() {
     };
     
     const docRef = await addDoc(collection(db, "photos"), photoData);
-    console.log("Document written with ID: ", docRef.id);
 
     // Add the new marker to the map immediately without reload
     const marker = L.marker([lat, lng]).addTo(map);
@@ -266,7 +261,6 @@ window.deletePhoto = async function(docId, filename, buttonElement) {
     // Close any open popup
     map.closePopup();
     
-    console.log("Photo deleted successfully");
     alert("Photo deleted successfully!");
   } catch (error) {
     console.error("Error deleting photo:", error);
@@ -285,7 +279,6 @@ async function loadMarkers() {
     Object.keys(markers).forEach(key => delete markers[key]);
     
     const snapshot = await getDocs(collection(db, 'photos'));
-    console.log(`Loading ${snapshot.size} markers from Firestore`);
     
     // Set to track coordinates we've already placed markers at
     const coordinatesSet = new Set();
@@ -310,7 +303,6 @@ async function loadMarkers() {
       
       // Skip if we've already added a marker at these coordinates
       if (coordinatesSet.has(coordKey)) {
-        console.log(`Skipping duplicate marker at ${coordKey}`);
         return;
       }
       
@@ -333,7 +325,7 @@ async function loadMarkers() {
           </div>`
         );
       } catch (error) {
-        console.error("Could not load image for:", filename, error);
+        console.error(`Could not load image for "${label}" (${filename}):`, error.code || error.message || error);
       }
     });
   } catch (error) {
@@ -341,27 +333,24 @@ async function loadMarkers() {
   }
 }
 
+// Function to set the background image from Firebase Storage
 async function setBackgroundImage() {
   try {
-    console.log("Attempting to fetch background image...");
     const bgImageRef = storageRef(storage, 'bckgrnd/space.webp');
-    
     const backgroundUrl = await getDownloadURL(bgImageRef);
-    console.log("Successfully got download URL:", backgroundUrl);
     
-    // Set the background image of the map container instead
+    // Set the background image of the map container
     const mapContainer = document.querySelector('.map-container');
     mapContainer.style.backgroundImage = `url(${backgroundUrl})`;
     mapContainer.style.backgroundSize = 'cover';
     mapContainer.style.backgroundPosition = 'center';
-    console.log("Background image applied to map container");
   } catch (error) {
-    console.error("Error setting background:", error);
+    console.error("Could not load background image:", error.code || error.message || error);
   }
 }
 
-// Call this function when the page loads
+// Load markers and set background when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   loadMarkers();
-  setBackgroundImage(); // Add this line to call the new function
+  setBackgroundImage();
 });
