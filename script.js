@@ -341,7 +341,27 @@ async function loadMarkers() {
   }
 }
 
-// Load markers when the page loads
+async function setBackgroundImage() {
+  try {
+    console.log("Attempting to fetch background image...");
+    const bgImageRef = storageRef(storage, 'bckgrnd/space.webp');
+    
+    const backgroundUrl = await getDownloadURL(bgImageRef);
+    console.log("Successfully got download URL:", backgroundUrl);
+    
+    // Set the background image of the map container instead
+    const mapContainer = document.querySelector('.map-container');
+    mapContainer.style.backgroundImage = `url(${backgroundUrl})`;
+    mapContainer.style.backgroundSize = 'cover';
+    mapContainer.style.backgroundPosition = 'center';
+    console.log("Background image applied to map container");
+  } catch (error) {
+    console.error("Error setting background:", error);
+  }
+}
+
+// Call this function when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   loadMarkers();
+  setBackgroundImage(); // Add this line to call the new function
 });
