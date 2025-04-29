@@ -349,6 +349,59 @@ async function setBackgroundImage() {
   }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  // Check for saved preference
+  const darkMode = localStorage.getItem('darkMode') === 'enabled';
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  
+  // Set initial state
+  if (darkMode) {
+    document.body.classList.add('dark-mode');
+    darkModeToggle.checked = true;
+    updateMapTiles(true);
+  }
+  
+  // Toggle dark mode
+  darkModeToggle.addEventListener('change', () => {
+    if (darkModeToggle.checked) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('darkMode', 'enabled');
+      updateMapTiles(true);
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('darkMode', 'disabled');
+      updateMapTiles(false);
+    }
+  });
+});
+
+// Update map tiles based on mode
+function updateMapTiles(isDark) {
+  // Remove current tile layer
+  map.eachLayer(layer => {
+    if (layer instanceof L.TileLayer) {
+      map.removeLayer(layer);
+    }
+  });
+  
+  // Add appropriate tile layer
+  if (isDark) {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19,
+      noWrap: true
+    }).addTo(map);
+  } else {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19,
+      noWrap: true
+    }).addTo(map);
+  }
+}
+
 // Load markers and set background when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   loadMarkers();
