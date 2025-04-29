@@ -18,6 +18,8 @@ import {
 
 // Global marker tracking
 const markers = {};
+// Marker cluster group
+let markerClusterGroup;
 
 // Firebase config
 const firebaseConfig = {
@@ -51,6 +53,33 @@ const map = L.map('map', {
 L.control.zoom({
   position: 'bottomright'
 }).addTo(map);
+
+// Initialize marker cluster group with custom options
+markerClusterGroup = L.markerClusterGroup({
+  showCoverageOnHover: false,
+  maxClusterRadius: 50,
+  spiderfyOnMaxZoom: true,
+  disableClusteringAtZoom: 16,
+  iconCreateFunction: function(cluster) {
+    const count = cluster.getChildCount();
+    let size = 'small';
+    
+    if (count > 50) {
+      size = 'large';
+    } else if (count > 10) {
+      size = 'medium';
+    }
+    
+    return L.divIcon({
+      html: `<div><span>${count}</span></div>`,
+      className: `marker-cluster marker-cluster-${size}`,
+      iconSize: new L.Point(40, 40)
+    });
+  }
+});
+
+// Add the cluster group to the map
+map.addLayer(markerClusterGroup);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
@@ -197,8 +226,8 @@ window.uploadFile = async function() {
     
     const docRef = await addDoc(collection(db, "photos"), photoData);
 
-    // Add the new marker to the map immediately without reload
-    const marker = L.marker([lat, lng]).addTo(map);
+    // Add the new marker to the cluster group
+    const marker = L.marker([lat, lng]);
     markers[docRef.id] = marker;
     marker.bindPopup(
       `<div class="popup-content">
@@ -209,6 +238,9 @@ window.uploadFile = async function() {
         </button>
       </div>`
     );
+    
+    // Add the marker to the cluster group
+    markerClusterGroup.addLayer(marker);
     
     // Clear form
     fileInput.value = "";
@@ -252,9 +284,9 @@ window.deletePhoto = async function(docId, filename, buttonElement) {
     const fileRef = storageRef(storage, 'photos/' + filename);
     await deleteObject(fileRef);
     
-    // Remove the marker using our stored reference
+    // Remove the marker from the cluster group
     if (markers[docId]) {
-      map.removeLayer(markers[docId]);
+      markerClusterGroup.removeLayer(markers[docId]);
       delete markers[docId]; // Clean up the reference
     }
     
@@ -271,10 +303,9 @@ window.deletePhoto = async function(docId, filename, buttonElement) {
 // Improved loadMarkers function with coordinate tracking to prevent duplicates
 async function loadMarkers() {
   try {
-    // Clear all existing markers first
-    Object.values(markers).forEach(marker => {
-      map.removeLayer(marker);
-    });
+    // Clear all existing markers first from the cluster group
+    markerClusterGroup.clearLayers();
+    
     // Reset the markers object
     Object.keys(markers).forEach(key => delete markers[key]);
     
@@ -310,7 +341,7 @@ async function loadMarkers() {
 
       try {
         const url = await getDownloadURL(storageRef(storage, 'photos/' + filename));
-        const marker = L.marker(coords).addTo(map);
+        const marker = L.marker(coords);
         
         // Store marker reference with document ID
         markers[docId] = marker;
@@ -324,6 +355,9 @@ async function loadMarkers() {
             </button>
           </div>`
         );
+        
+        // Add to cluster group instead of directly to map
+        markerClusterGroup.addLayer(marker);
       } catch (error) {
         console.error(`Could not load image for "${label}" (${filename}):`, error.code || error.message || error);
       }

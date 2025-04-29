@@ -154,19 +154,75 @@ button:disabled {
   cursor: not-allowed;
 }
 
-:root {
-  --primary-bg: white;
-  --primary-text: #333;
-  --header-bg: rgba(255, 255, 255, 0.9);
-  --map-bg: #c4e0e9;
-  --button-primary: #4CAF50;
-  --button-primary-hover: #45a049;
-  --button-secondary: #2196F3;
-  --button-secondary-hover: #0b7dda;
-  --button-delete: #f44336;
-  --button-delete-hover: #d32f2f;
-  --input-border: #ddd;
-  --box-shadow: rgba(0, 0, 0, 0.1);
+/* Marker Cluster Custom Styling */
+.marker-cluster {
+  background-clip: padding-box;
+  text-align: center;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster div {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 50%;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster-small {
+  background-color: rgba(181, 226, 140, 0.8);
+}
+
+.marker-cluster-small div {
+  background-color: rgba(110, 204, 57, 0.8);
+  color: #fff;
+}
+
+.marker-cluster-medium {
+  background-color: rgba(241, 211, 87, 0.8);
+}
+
+.marker-cluster-medium div {
+  background-color: rgba(240, 194, 12, 0.8);
+  color: #fff;
+}
+
+.marker-cluster-large {
+  background-color: rgba(253, 156, 115, 0.8);
+}
+
+.marker-cluster-large div {
+  background-color: rgba(241, 128, 23, 0.8);
+  color: #fff;
+}
+
+.dark-mode .marker-cluster-small {
+  background-color: rgba(76, 175, 80, 0.8);
+}
+
+.dark-mode .marker-cluster-small div {
+  background-color: rgba(56, 142, 60, 0.8);
+}
+
+.dark-mode .marker-cluster-medium {
+  background-color: rgba(255, 193, 7, 0.8);
+}
+
+.dark-mode .marker-cluster-medium div {
+  background-color: rgba(255, 160, 0, 0.8);
+}
+
+.dark-mode .marker-cluster-large {
+  background-color: rgba(244, 67, 54, 0.8);
+}
+
+.dark-mode .marker-cluster-large div {
+  background-color: rgba(211, 47, 47, 0.8);
 }
 
 :root {
