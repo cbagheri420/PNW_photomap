@@ -165,7 +165,7 @@ window.useCurrentLocation = function() {
   });
 };
 
-// Upload photo and metadata with duplicate check
+// Function to upload file for marker
 window.uploadFile = async function() {
   try {
     const fileInput = document.getElementById("fileInput");
@@ -173,6 +173,7 @@ window.uploadFile = async function() {
     const label = document.getElementById("labelInput").value;
     const lat = parseFloat(document.getElementById("latInput").value);
     const lng = parseFloat(document.getElementById("lngInput").value);
+    const category = document.getElementById("categorySelect").value || "default";
 
     if (!file) {
       return alert("Please select a file to upload");
@@ -216,22 +217,24 @@ window.uploadFile = async function() {
     await uploadBytes(fileRef, file);
     const url = await getDownloadURL(fileRef);
 
-    // Save metadata to Firestore
+    // Save metadata to Firestore with category
     const photoData = {
       coords: [lat, lng],
       label,
       filename: file.name,
+      category,
       uploadedAt: serverTimestamp()
     };
     
     const docRef = await addDoc(collection(db, "photos"), photoData);
 
-    // Add the new marker to the cluster group
-    const marker = L.marker([lat, lng]);
+    // Add the new marker with custom icon based on category
+    const marker = createCategoryMarker([lat, lng], category);
     markers[docRef.id] = marker;
     marker.bindPopup(
       `<div class="popup-content">
         <strong>${label}</strong>
+        <p>Category: ${category}</p>
         <img src="${url}" alt="${label}" width="150">
         <button class="delete-btn" onclick="deletePhoto('${docRef.id}', '${file.name}', this)">
           🗑️ Remove
@@ -247,16 +250,17 @@ window.uploadFile = async function() {
     document.getElementById("labelInput").value = "";
     document.getElementById("latInput").value = "";
     document.getElementById("lngInput").value = "";
-    
+    document.getElementById("categorySelect").value = "default";
+
     // Clear the temporary marker after successful upload
     if (clickMarker) {
       map.removeLayer(clickMarker);
       clickMarker = null;
     }
-    
+
     uploadBtn.disabled = false;
     uploadBtn.textContent = "Upload Photo";
-    
+
     alert("Photo uploaded successfully!");
   } catch (error) {
     console.error("Upload failed:", error);
@@ -266,57 +270,94 @@ window.uploadFile = async function() {
   }
 };
 
-// Improved delete function using marker references
+// Function to delete a photo and its marker
 window.deletePhoto = async function(docId, filename, buttonElement) {
   try {
-    // Confirm before deleting
     if (!confirm("Are you sure you want to delete this photo?")) {
       return;
     }
     
-    buttonElement.textContent = "Deleting...";
+    // Disable the button to prevent multiple clicks
     buttonElement.disabled = true;
+    buttonElement.textContent = "Deleting...";
     
-    // Delete from Firestore
+    // Delete the document from Firestore
     await deleteDoc(doc(db, "photos", docId));
     
-    // Delete from Storage
+    // Delete the file from Storage
     const fileRef = storageRef(storage, 'photos/' + filename);
     await deleteObject(fileRef);
     
-    // Remove the marker from the cluster group
+    // Remove the marker from the map
     if (markers[docId]) {
       markerClusterGroup.removeLayer(markers[docId]);
-      delete markers[docId]; // Clean up the reference
+      delete markers[docId];
     }
     
-    // Close any open popup
+    // Close the popup manually (since we removed the marker)
     map.closePopup();
     
-    alert("Photo deleted successfully!");
+    console.log("Photo deleted successfully");
   } catch (error) {
     console.error("Error deleting photo:", error);
-    alert("Failed to delete photo: " + error.message);
+    alert("Error deleting photo: " + error.message);
+    
+    // Re-enable the button on error
+    buttonElement.disabled = false;
+    buttonElement.textContent = "🗑️ Remove";
   }
 };
 
-// Improved loadMarkers function with coordinate tracking to prevent duplicates
+// Create a new function to generate markers with colors based on category
+function createCategoryMarker(coords, category = 'default') {
+  const markerColors = {
+    default: '#2B83CF',
+    travel: '#FF5722',
+    food: '#4CAF50',
+    family: '#9C27B0',
+    nature: '#009688',
+    events: '#FFC107'
+  };
+
+  // Create a color-based marker icon
+  const color = markerColors[category] || markerColors.default;
+
+  const icon = L.divIcon({
+    className: 'custom-marker',
+    html: `<svg width="30" height="40" viewBox="0 0 30 40">
+            <path 
+              d="M15 0C6.716 0 0 6.716 0 15c0 8.284 15 25 15 25s15-16.716 15-25C30 6.716 23.284 0 15 0z" 
+              fill="${color}" 
+              stroke="#FFF"
+              stroke-width="1"
+            />
+            <circle cx="15" cy="15" r="7" fill="white" />
+          </svg>`,
+    iconSize: [30, 40],
+    iconAnchor: [15, 40],
+    popupAnchor: [0, -40]
+  });
+
+  return L.marker(coords, { icon: icon });
+}
+
+// Modify loadMarkers function to use category markers
 async function loadMarkers() {
   try {
     // Clear all existing markers first from the cluster group
     markerClusterGroup.clearLayers();
-    
+
     // Reset the markers object
     Object.keys(markers).forEach(key => delete markers[key]);
-    
+
     const snapshot = await getDocs(collection(db, 'photos'));
-    
+
     // Set to track coordinates we've already placed markers at
     const coordinatesSet = new Set();
-    
+
     snapshot.forEach(async (doc) => {
       const data = doc.data();
-      const { coords, label, filename } = data;
+      const { coords, label, filename, category = 'default' } = data;
       const docId = doc.id;
       
       if (!coords || !Array.isArray(coords) || coords.length !== 2) {
@@ -341,7 +382,9 @@ async function loadMarkers() {
 
       try {
         const url = await getDownloadURL(storageRef(storage, 'photos/' + filename));
-        const marker = L.marker(coords);
+        
+        // Create marker with category styling
+        const marker = createCategoryMarker(coords, category);
         
         // Store marker reference with document ID
         markers[docId] = marker;
@@ -349,6 +392,7 @@ async function loadMarkers() {
         marker.bindPopup(
           `<div class="popup-content">
             <strong>${label}</strong>
+            <p>Category: ${category}</p>
             <img src="${url}" alt="${label}" width="150">
             <button class="delete-btn" onclick="deletePhoto('${docId}', '${filename}', this)">
               🗑️ Remove
@@ -383,6 +427,7 @@ async function setBackgroundImage() {
   }
 }
 
+// Dark mode toggle handler
 document.addEventListener('DOMContentLoaded', () => {
   // Check for saved preference
   const darkMode = localStorage.getItem('darkMode') === 'enabled';

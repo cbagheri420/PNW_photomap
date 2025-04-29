@@ -370,6 +370,46 @@ header {
   align-items: center;
 }
 
+#categorySelect {
+  padding: 8px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+}
+
+.legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--primary-bg);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px var(--box-shadow);
+  z-index: 1000;
+  max-width: 150px;
+}
+
+.legend h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.color-dot.default { background-color: #2B83CF; }
+.color-dot.travel { background-color: #FF5722; }
+.color-dot.food { background-color: #4CAF50; }
+.color-dot.family { background-color: #9C27B0; }
+.color-dot.nature { background-color: #009688; }
+.color-dot.events { background-color: #FFC107; }
+
 @media (max-width: 768px) {
   header {
     padding: 0.5rem;
@@ -386,5 +426,16 @@ header {
   #map {
     width: 95vw;
     height: 95vw;
+  }
+
+  .legend {
+    bottom: 70px;
+    right: 10px;
+    max-width: 120px;
+    font-size: 12px;
+  }
+  
+  .legend h3 {
+    font-size: 13px;
   }
 }
