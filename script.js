@@ -308,7 +308,6 @@ window.deletePhoto = async function(docId, filename, buttonElement) {
   }
 };
 
-// Create a new function to generate markers with colors based on category
 function createCategoryMarker(coords, category = 'default') {
   const markerColors = {
     default: '#2B83CF',
@@ -338,7 +337,18 @@ function createCategoryMarker(coords, category = 'default') {
     popupAnchor: [0, -40]
   });
 
-  return L.marker(coords, { icon: icon });
+  const marker = L.marker(coords, { icon: icon });
+  
+  // Add hover effects using event listeners
+  marker.on('mouseover', function() {
+    this._icon.style.zIndex = 1000;
+  });
+  
+  marker.on('mouseout', function() {
+    this._icon.style.zIndex = '';
+  });
+
+  return marker;
 }
 
 // Modify loadMarkers function to use category markers

@@ -410,6 +410,21 @@ header {
 .color-dot.nature { background-color: #009688; }
 .color-dot.events { background-color: #FFC107; }
 
+.custom-marker {
+  transition: transform 0.2s ease-out;
+}
+
+.custom-marker:hover {
+  transform: scale(1.15);
+  cursor: pointer;
+  z-index: 1000 !important;
+}
+
+/* hover shadow */
+.custom-marker:hover svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
 @media (max-width: 768px) {
   header {
     padding: 0.5rem;
