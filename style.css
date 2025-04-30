@@ -425,6 +425,27 @@ header {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
+#cancelLocationBtn {
+  background-color: var(--button-delete);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  margin-left: 8px;
+}
+
+#cancelLocationBtn:hover {
+  background-color: var(--button-delete-hover);
+}
+
+/* Make sure the button aligns well with other elements */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   header {
     padding: 0.5rem;

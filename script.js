@@ -113,10 +113,28 @@ map.on('click', function(e) {
       document.getElementById("latInput").value = position.lat.toFixed(6);
       document.getElementById("lngInput").value = position.lng.toFixed(6);
     });
+    
+    // Show the cancel button when marker is added
+    document.getElementById("cancelLocationBtn").style.display = "inline-block";
   }
   
   clickMarker.bindPopup("Upload location").openPopup();
 });
+
+// Function to cancel location selection
+window.cancelLocation = function() {
+  if (clickMarker) {
+    map.removeLayer(clickMarker);
+    clickMarker = null;
+    
+    // Clear the form fields
+    document.getElementById("latInput").value = "";
+    document.getElementById("lngInput").value = "";
+    
+    // Hide the cancel button
+    document.getElementById("cancelLocationBtn").style.display = "none";
+  }
+};
 
 // Geolocation support
 window.useCurrentLocation = function() {
@@ -151,6 +169,9 @@ window.useCurrentLocation = function() {
         document.getElementById("latInput").value = position.lat.toFixed(6);
         document.getElementById("lngInput").value = position.lng.toFixed(6);
       });
+      
+      // Show the cancel button when marker is added
+      document.getElementById("cancelLocationBtn").style.display = "inline-block";
     }
     
     clickMarker.bindPopup("Your location").openPopup();
@@ -256,6 +277,9 @@ window.uploadFile = async function() {
     if (clickMarker) {
       map.removeLayer(clickMarker);
       clickMarker = null;
+      
+      // Hide the cancel button
+      document.getElementById("cancelLocationBtn").style.display = "none";
     }
 
     uploadBtn.disabled = false;
@@ -462,6 +486,11 @@ document.addEventListener('DOMContentLoaded', () => {
       updateMapTiles(false);
     }
   });
+  
+  // Hide cancel button initially
+  if (document.getElementById("cancelLocationBtn")) {
+    document.getElementById("cancelLocationBtn").style.display = "none";
+  }
 });
 
 // Update map tiles based on mode
