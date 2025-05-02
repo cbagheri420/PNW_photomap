@@ -3,11 +3,17 @@ A beautiful interactive web application that allows users to upload and view pho
 Key Features
 
 🗺️ Interactive Circular Map - Visually stunning globe-like interface with smooth navigation
+
 📸 Photo Uploads - Easy uploading with automatic geolocation support
+
 🔖 Categorization System - Organize photos by category with visual color coding
+
 🌓 Dark/Light Mode - Toggle between aesthetic light and dark themes
+
 📱 Mobile Responsive - Fully functional across all device sizes
+
 🔍 Marker Clustering - Efficiently handles large numbers of photo markers
+
 🔥 Firebase Integration - Built with Firebase Storage and Firestore for reliable cloud storage
 
 Technologies Used
