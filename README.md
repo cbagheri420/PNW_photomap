@@ -23,4 +23,6 @@ Maps: Leaflet.js with custom marker styling
 Database & Storage: Firebase Firestore & Storage
 UX Enhancements: Custom animations, responsive design, intuitive user controls
 
+(To launch, right click index.html and select open with live server, will open a tab in your browser)
+
 This project demonstrates strong frontend skills with JavaScript, modern UI/UX design principles, integration with cloud services, and effective data visualization techniques. The code is clean, well-organized, and showcases thoughtful implementation of user-centered features.
